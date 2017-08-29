@@ -6,3 +6,4 @@
         return fn.apply(context)
     }
 } `
+### bind函数
