@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>函数柯里化</title>
+</head>
+<body>
+    
+    <button type="button" class="btn btn-large btn-block btn-default">点击</button>
+    
+    <script>
+        (function(){
+            function add(num1,num2){
+                return num1+num2;
+            };
+            function curry(fn){
+                //函数柯里化就是调用有我们指定参数的函数
+                //首先取得除函数以外的参数列表
+                var args=Array.prototype.slice.call(arguments,1);
+                return function (){
+                    var innerArgs=Array.prototype.slice.call(arguments);
+                    var finalArgs=args.concat(innerArgs);
+                    return fn.apply(null,finalArgs);
+                }
+            };
+            var currAdd=curry(add,10);
+            var result=currAdd(5);
+
+
+            var handler={
+                message:'Event Handler',
+                handlerClick:function(name,event){
+                    console.log(this.message);
+                    console.log(name);
+                    console.log(event.type);
+                }
+            }
+            function bind(fn,context){
+                var args=Array.prototype.slice.call(arguments,2);
+                return function(){
+                    var innerArgs=Array.prototype.slice.call(arguments);
+                    var finalArgs=args.concat(innerArgs);
+                    return fn.apply(context,finalArgs);
+                }
+            }
+            var btn=document.querySelector('.btn');
+            btn.addEventListener('click',bind(handler.handlerClick,handler,'hello'));
+
+            //setInterval在定时器执行的时间大于定时器的间隔时，会跳过执行，造成定时器不间断的执行
+            //对此可以用延迟定时器模拟
+            setTimeout(function(){
+                //要进行的操作
+                setTimeout(arguments.callee,50)
+            },50)
+
+            //函数节流和函数防抖都是节省浏览器资源的函数
+            //DOM操作非常昂贵，可能会导致函数崩溃和浏览器挂起
+            function throttle(fn,context){
+                timer=null;
+
+                timer=setTimeout(function() {
+                    console.log('10');
+                }, 100);
+            }
+            window.onsize=function(){
+                
+            };
+            //自定义事件---javascript与浏览器交互的只要途径
+            //事件，是一种观察者设计模式。创建松耦合代码的技术
+            //观察者有两类对象组成：主体和观察者。主体负责发布事件，
+            //观察者通过订阅这些事件来观察主体，主体并不知道观察者的任何消息
+            function EventTarget(){
+                //存储事件处理程序
+                this.handlers={};
+            }
+            EventTarget.prototype={
+                constructor:EventTarget,
+                addHandler:function(type,handler){
+                    if(typeof this.handlers[type]==="undefined"){
+                        this.handlers[type]=[];
+                    }
+                    this.handlers[type].push(handler);
+                },
+                fire:function(event){
+                    if(!event.target){
+                        event.target=this;
+                    }
+                    if(this.handlers[event.type] instanceof Array){
+                        var handlers=this.handlers[event.type];
+                        for(var i=0,len=handlers.length;i<len;i++){
+                            handlers[i](event);
+                        }
+                    }
+                },
+                removeHandler:function(type,handler){
+                    if(this.handlers[type] instanceof Array){
+                        var handlers=this.handlers[type];
+                        for(var i=0,len=handlers.length;i<len;i++){
+                            if(handlers[i]===handler){
+                                break;
+                            }
+                        }
+                        handlers.splice(i,1);
+                    }
+                }
+            };
+            //调用自定义事件
+            function alertMsg(event){
+                alert('message:'+event.message);
+            }
+            var target=new EventTarget();
+            target.addHandler('message',alertMsg);
+            //触发事件
+            target.fire({type:'message',message:'Hello World'});
+            //卸载事件
+            target.removeHandler('message',alertMsg);
+            //触发事件
+            target.fire({type:'message',message:'Hello World'});
+        })()
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>寄生组合式继承实现自定义事件的继承</title>
+</head>
+<body>
+    <script>
+        //寄生组合式继承
+        function object(o){
+            var F= function(){};
+            F.prototype=o;
+            return new F();
+        }
+        function inhertPrototype(sub,sup){
+            //原型对象副本
+            var prototype=object(sup.prototype);
+            prototype.constructor=sub;
+            sub.prototype=prototype;
+        }
+        //举个栗子
+        function Person(name){
+            this.name=name;
+        }
+        Person.prototype.sayName=function(){
+            alert(this.name);
+        }
+        function Man(name,age){
+            Person.call(this,name);
+            this.age=age;
+        }
+        inhertPrototype(Man,Person);
+        var man=new Man('cc',23);
+        // man.sayName();
+        // alert(man.age);
+        //自定义事件说话事件
+        function Say(){
+            //存放事件处理对象
+            this.handlers={};
+        }
+        //原型添加处理方法
+        /*
+        *addHandler       注册事件
+        *fire             触发事件
+        *removeHandler    移除事件
+        */
+        Say.prototype={
+            //恢复构造函数指针指向
+            constructor:Say,
+            addHandler:function(type,handler){
+                if(this.handlers[type]===undefined){
+                    this.handlers[type]=[];
+                }
+                this.handlers[type].push(handler);
+            },
+            fire:function(event){
+                if(!event.target){
+                    event.target=this;
+                }
+                if(this.handlers[event.type] instanceof Array){
+                    var handlers=this.handlers[event.type];
+                    for(var i=0,len=handlers.length;i<len;i++){
+                        handlers[i](event);
+                    }
+                }
+            },
+            removeHandler:function(type,handler){
+                if(this.handlers[type] instanceof Array){
+                    var handlers=this.handlers[type];
+                    for(var i=0,len=handlers.length;i<len;i++){
+                        if(handlers[i]===handler){
+                            break;
+                        }
+                    }
+                    handlers.splice(i,1);
+                }
+            }
+        }
+        function sayHello(event){
+            alert(event.message);
+        }
+        // var say=new Say();
+        // say.addHandler('say',sayHello);
+        // say.fire({type:'say',message:'Hello'});
+        // say.removeHandler('say',sayHello);
+        // say.fire({type:'say',message:'Hello'});
+        //继承
+        function SayChild(){
+            Say.call(this);
+        };
+        inhertPrototype(SayChild,Say);
+        var sayChild=new SayChild();
+        // sayChild.addHandler('eat',sayHello);
+        // sayChild.fire({type:'eat',message:'rice'});
+        // sayChild.removeHandler('eat',sayHello);
+        // sayChild.fire({type:'eat',message:'rice'});
+    </script>
+</body>
+</html>
